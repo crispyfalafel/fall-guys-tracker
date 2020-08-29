@@ -65,7 +65,7 @@ def index():
             flash("Results missing", "warning")
             return redirect("/")
 
-        db.execute("INSERT INTO fallguystracker.history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, datetime('now'))",
+        db.execute("INSERT INTO fallguystracker.history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, current_date)",
                     id=session["user_id"], result=request.form.get("result"), game=request.form.get("game"), round=int(request.form.get("round")))
 
         flash("Match recorded!", "success")
