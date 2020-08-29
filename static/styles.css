@@ -1,0 +1,111 @@
+main .form-control
+{
+    /* center form controls */
+    display: inline-block;
+
+    /* override Bootstrap's 100% width for form controls */
+    width: auto;
+}
+
+main
+{
+    /* scroll horizontally as needed */
+    overflow-x: auto;
+
+    /* center contents */
+    text-align: center;
+
+    padding-top: 45px;
+}
+
+main img
+{
+    /* constrain images on small screens */
+    max-width: 100%;
+}
+
+nav .navbar-brand
+{
+    /* size for brand */
+    font-size: xx-large;
+}
+
+.navbar, .navbar-brand
+{
+    min-height: 50px;
+}
+
+.nav-item
+{
+    font-size: medium;
+}
+
+.body
+{
+    margin: 0px;
+    padding: 0px;
+}
+
+#matchform
+{
+      /* size for form */
+     margin: auto;
+     width: 30%;
+}
+
+page-title
+{
+     /* add space below title */
+    padding-bottom: 40px;
+}
+
+input[type="radio"]
+{
+     /* bigger radio buttons */
+     transform: scale(1.25);
+}
+
+.text-medium
+{
+    font-size: medium;
+}
+
+th, td
+{
+    /* change table font size */
+    font-size: 15px;
+}
+
+.win
+{
+    background-color: #8de9a2; !important
+}
+
+.card
+{
+    /* change card text alignment */
+    text-align: left;
+}
+
+.card .list-group
+{
+    /* change card list font size */
+    font-size: medium;
+}
+
+.align-left
+{
+    float: left;
+}
+
+.align-right
+{
+    float: right;
+}
+
+
+.table-white
+{
+    background-color: white; !important
+}
+

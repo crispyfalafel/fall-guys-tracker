@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Statistics
+{% endblock %}
+
+{% block main %}
+    <div class="pb-3">
+        <h1>Player Statistics: {{ username.title() }}</h1>
+        <h3>Wins: {{ stats["win_count"] }}</h3>
+    </div>
+
+    <!-- Overall card -->
+    <div class="container">
+        <div class="row">
+            <div class="col-sm">
+                <div class="card bg-light mb-3">
+                    <h3 class="card-header bg-dark text-white">Overall</h3>
+                    <div class="card-body">
+                        <div class="row d-flex">
+                            <div class="col-md">
+                                <h5>Finals Made: {{ stats["finals_count"] }}</h5>
+                                <h5>Matches Played: {{ stats["game_count"] }}</h5>
+                                <h5>Average Rounds per Game: {{ stats["avg_round"] }}</h5>
+
+                            </div>
+                            <div class="col-md">
+                                <h5>Win Rate: {{ stats["win_rate"] }}</h5>
+                                <h5>Finals Rate: {{ stats["finals_rate"] }}</h5>
+                                <h5>Qualification Rate: {{ stats["rounds_rate"] }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finals card -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card bg-light mb-3">
+                    <h3 class="card-header bg-dark text-white">Finals</h3>
+                    <div class="card-body">
+
+
+                        <!-- Finals pie chart -->
+                        {% if stats["win_count"] > 0 %}
+                            <h4 class="text-center pb-2">Finals Won By Game</h4>
+                            <div>
+                                <canvas id="finals_chart" width="100%" height="80px" class="pb-3"></canvas>
+                            </div>
+
+                            <script>
+                                var ctx = document.getElementById('finals_chart').getContext('2d');
+                                var chart = new Chart(ctx, {
+                                    // The type of chart we want to create
+                                    type: 'pie',
+
+                                    // The data for our dataset
+                                    data: {
+                                        labels: {{ labels|safe }},
+                                        datasets: [{
+                                            label: "My First dataset",
+                                            backgroundColor: ['#f5cf08', '#3de7de', '#e822a0', '#00b6ff'],
+                                            borderColor: '#eeeeee',
+                                            data: {{ values|safe }},
+                                        }]
+                                    },
+
+                                    // Configuration options go here
+                                    options: {
+                                        legend: {
+                                            position: "bottom",
+                                            labels: {
+                                                fontFamily: "Open Sans",
+                                                fontColor: "black",
+                                                fontSize: 13
+                                            }
+                                        }
+                                    }
+                                });
+
+                            </script>
+                        {% else %}
+                            <h5 class="text-center pb-3">Win a game to see more stats!</h5>
+                        {% endif %}
+
+                        <!-- Finals game specific stats -->
+
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item text-center">
+                                <span class="align-left font-weight-bold">Game</span>
+                                <span class="align-right font-weight-bold">Wins / Attempts</span>
+                            </li>
+                            {% for game in finals %}
+                                <li class="list-group-item text-center">
+                                    <span class="align-left">{{ game.title() }}</span>
+
+                                    <span class="align-right pr-5">{{ wins[game] }} / {{ finals[game] }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Non-finals card -->
+
+            <div class="col-md-6">
+                <div class="card bg-light mb-3">
+                    <h3 class="card-header bg-dark text-white">Non-Finals</h3>
+                    <div class="card-body">
+                        <h5 class="text-center pb-3">Team games are the cause of {{ stats["team_winrate"] }} of your eliminations</h5>
+
+
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <span class="align-left font-weight-bold">Game</span>
+                                <span class="align-right font-weight-bold">Losses</span>
+                            </li>
+                            {% for game in losses %}
+                                <li class="list-group-item">
+                                    <span class="align-left">{{ game["game"].title() }}</span>
+                                    <span class="align-right pr-4">{{game["COUNT(game)"] }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+            </div>
+
+
+        </div>
+    </div>
+
+{% endblock %}

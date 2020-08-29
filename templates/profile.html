@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block main %}
+
+    <div class="pb-5">
+        <h1 class="pb-3">Player Profile: {{ username.title() }}</h1>
+        <h3>Wins: {{ stats["win_count"] }}</h3>
+        <h3>Games played: {{ stats["game_count"] }}</h3>
+    </div>
+
+    <div class="pb-3">
+        <h1>Last 10 Games</h1>
+    </div>
+
+    <div class="container">
+        <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th>Result</th>
+                <th>Last Game</th>
+                <th>Rounds</th>
+                <th>Time (UTC)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for match in matches %}
+                {% if match["result"] == "win" %}
+
+                    <tr class="win">
+                        <td>{{ match["result"].title() }}</td>
+                        <td>{{ match["game"].title() }}</td>
+                        <td>{{ match["round"] }}</td>
+                        <td>{{ match["datetime"] }}</td>
+                    </tr>
+                {% else %}
+                    <tr class="table-light">
+                        <td>{{ match["result"].title() }}</td>
+                        <td>{{ match["game"].title() }}</td>
+                        <td>{{ match["round"] }}</td>
+                        <td>{{ match["datetime"] }}</td>
+                    </tr>
+                {% endif %}
+
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+{% endblock %}
