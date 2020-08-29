@@ -66,7 +66,11 @@ def index():
             flash("Results missing", "warning")
             return redirect("/")
 
+<<<<<<< Updated upstream
         db.execute("INSERT INTO history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, datetime('now'))",
+=======
+        db.execute("INSERT INTO fallguystracker.history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, clock_timestamp())",
+>>>>>>> Stashed changes
                     id=session["user_id"], result=request.form.get("result"), game=request.form.get("game"), round=int(request.form.get("round")))
 
         flash("Match recorded!", "success")
