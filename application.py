@@ -31,7 +31,7 @@ def after_request(response):
 
 
 # Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_FILE_DIR"] = mkdtemp()
+# app.config["SESSION_FILE_DIR"] = mkdtemp()  # Only use when running locally
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
@@ -66,11 +66,7 @@ def index():
             flash("Results missing", "warning")
             return redirect("/")
 
-<<<<<<< Updated upstream
-        db.execute("INSERT INTO history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, datetime('now'))",
-=======
         db.execute("INSERT INTO fallguystracker.history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, clock_timestamp())",
->>>>>>> Stashed changes
                     id=session["user_id"], result=request.form.get("result"), game=request.form.get("game"), round=int(request.form.get("round")))
 
         flash("Match recorded!", "success")
