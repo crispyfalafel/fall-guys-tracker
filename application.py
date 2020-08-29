@@ -1,5 +1,4 @@
 import os
-import sqlalchemy
 import psycopg2
 
 from cs50 import SQL
@@ -184,7 +183,7 @@ def statistics():
                     id=id)
     wins = {}
     for row in rows:
-        wins[row["game"]] = row["COUNT(game)"]
+        wins[row["game"]] = row["count"]
 
     # Get list of total losses on each map in descending order
     losses = db.execute("SELECT game, COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE NOT mode= 'final' AND id = :id AND result = 'loss' GROUP BY game ORDER BY COUNT(game) DESC;",
@@ -196,7 +195,7 @@ def statistics():
     finals = {}
     finals_winrate = {}
     for row in rows:
-        finals[row["game"]] = row["COUNT(game)"]
+        finals[row["game"]] = row["count"]
 
         # Add game to win rate dictionary if user has won on the game before
         if row["game"] in wins:
@@ -207,23 +206,23 @@ def statistics():
 
     # Get total games played
     game_count = db.execute("SELECT COUNT(*) FROM fallguystracker.history WHERE id = :id", id=id)
-    stats["game_count"] = game_count[0]["COUNT(*)"]
+    stats["game_count"] = game_count[0]["count"]
 
     # Get total wins
     win_count = db.execute("SELECT COUNT(game) FROM fallguystracker.history WHERE id = :id AND result = 'win'", id=id)
-    stats["win_count"] = win_count[0]['COUNT(game)']
+    stats["win_count"] = win_count[0]['count']
 
     # Get total rounds played
     round_count = db.execute("SELECT SUM(round) FROM fallguystracker.history WHERE id = :id", id=id)
-    stats["round_count"] = round_count[0]["SUM(round)"]
+    stats["round_count"] = round_count[0]["sum"]
 
     # Get finals made
     finals_count = db.execute("SELECT COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE mode = 'final' AND id = :id",
                             id=id)
-    stats["finals_count"] = finals_count[0]["COUNT(game)"]
+    stats["finals_count"] = finals_count[0]["count"]
 
     # Calculate total rounds qualified
-    stats["rounds_won"] = stats["round_count"] - (stats["game_count"] - stats["win_count"])
+    stats["rounds_won"] = stats["round_count"] - stats["game_count"] + stats["win_count"]
 
     # Calculate win rate
     stats["win_rate"] = percent(stats["win_count"], stats["game_count"])
@@ -236,15 +235,19 @@ def statistics():
 
     # Calculate average rounds per game
     avg_round = db.execute("SELECT AVG(round) FROM fallguystracker.history WHERE id = :id", id=id)
-    stats["avg_round"] = round(avg_round[0]["AVG(round)"], 2)
+    stats["avg_round"] = round(avg_round[0]["avg"], 2)
 
-    # Calculate team game elimination rate
-    team_count = db.execute("SELECT COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE mode = 'team' AND id = :id",
-                            id=id)
-    team_wins = db.execute("SELECT COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE mode = 'final' AND result = 'win' AND id = :id",
+    # Get total team game eliminations
+    team_losses = db.execute("SELECT COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE mode = 'team' AND result = 'loss' AND id = :id GROUP BY game",
                             id=id)
 
-    stats["team_winrate"] = percent(team_count[0]["COUNT(game)"] - team_wins[0]["COUNT(game)"], team_count[0]["COUNT(game)"])
+    # Calculate % of eliminations due to team games
+
+    # Return 0 if there are no team eliminations
+    if not team_losses:
+        stats["team_winrate"] = "0.00%"
+    else:
+        stats["team_winrate"] = percent(team_losses[0]["count"], stats["game_count"] - stats["win_count"])
 
     # Create lists for pie chart
     labels = []

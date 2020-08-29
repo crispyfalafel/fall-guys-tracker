@@ -122,7 +122,7 @@
                             {% for game in losses %}
                                 <li class="list-group-item">
                                     <span class="align-left">{{ game["game"].title() }}</span>
-                                    <span class="align-right pr-4">{{game["COUNT(game)"] }}</span>
+                                    <span class="align-right pr-4">{{game["count"] }}</span>
                                 </li>
                             {% endfor %}
                         </ul>
