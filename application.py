@@ -250,7 +250,7 @@ def statistics():
         stats["team_winrate"] = "0.00%"
     # Calculate % of eliminations due to team games
     else:
-        stats["team_winrate"] = percent(team_losses[0]["count"], stats["game_count"] - stats["win_count"])
+        stats["team_winrate"] = percent(team_losses[0]["count"], stats["game_count"] - stats["finals_count"])
 
     # Create lists for pie chart
     labels = []

@@ -95,8 +95,14 @@
                             {% for game in finals %}
                                 <li class="list-group-item text-center">
                                     <span class="align-left">{{ game.title() }}</span>
+                                    
+                                    {% if game in wins %}
+                                        <span class="align-right pr-5">{{ wins[game] }} / {{ finals[game] }}</span>
+                                    
+                                    {% else %}
+                                    <span class="align-right pr-5">0 / {{ finals[game] }}</span>
 
-                                    <span class="align-right pr-5">{{ wins[game] }} / {{ finals[game] }}</span>
+                                    {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
