@@ -320,11 +320,11 @@ def profile(username):
 
     # Get number of wins
     win_count = db.execute("SELECT COUNT(game) FROM fallguystracker.history WHERE id = :id AND result = 'win'", id=search_id)
-    stats["win_count"] = win_count[0]['COUNT(game)']
+    stats["win_count"] = win_count[0]['count']
 
     # Get number of games played
     game_count = db.execute("SELECT COUNT(*) FROM fallguystracker.history WHERE id = :id", id=search_id)
-    stats["game_count"] = game_count[0]["COUNT(*)"]
+    stats["game_count"] = game_count[0]["count"]
 
     # Get recent match history (last 10 games)
     matches = db.execute("SELECT * FROM fallguystracker.history WHERE id=:id ORDER BY datetime DESC LIMIT 10", id=search_id)
