@@ -27,7 +27,7 @@ def after_request(response):
 
 
 # Configure session to use filesystem (instead of signed cookies)
-# app.config["SESSION_FILE_DIR"] = mkdtemp()  # Only use when running locally
+#app.config["SESSION_FILE_DIR"] = mkdtemp()  # Only use when running locally
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
@@ -64,7 +64,7 @@ def index():
             flash("Results missing", "warning")
             return redirect("/")
 
-        db.execute("INSERT INTO fallguystracker.history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, current_date)",
+        db.execute("INSERT INTO fallguystracker.history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, current_timestamp(0))",
                     id=session["user_id"], result=request.form.get("result"), game=request.form.get("game"), round=int(request.form.get("round")))
 
         flash("Match recorded!", "success")
@@ -159,7 +159,7 @@ def register():
 
         # Log user in
         session["user_id"] = id
-        flash("Registered!")
+        flash("Registered!", "success")
         return redirect("/")
 
 @app.route("/statistics")
@@ -173,10 +173,17 @@ def statistics():
 
     stats = {}
 
+    # Get total games played
+    game_count = db.execute("SELECT COUNT(*) FROM fallguystracker.history WHERE id = :id", id=id)
+
     # Check if user has games recorded
-    rows = db.execute("SELECT * FROM fallguystracker.history WHERE id=:id", id=id)
+    rows = db.execute("SELECT * FROM fallguystracker.history WHERE id = :id", id=id)
+    # Return empty page if user has no games recorded
     if not rows:
-        return apology("record some games beech", 404)
+        return render_template("empty.html", route="statistics")
+
+    stats["game_count"] = game_count[0]["count"]
+    
 
     # Get dictionary of total win count for each finals map
     rows = db.execute("SELECT game, COUNT(game) FROM fallguystracker.history WHERE id = :id AND result = 'win' GROUP BY game",
@@ -201,12 +208,9 @@ def statistics():
         if row["game"] in wins:
             finals_winrate[row["game"]] = percent(wins[row["game"]], finals[row["game"]])
 
+        # Set win rate to 0% if user has never won on the game
         else:
             finals_winrate[row["game"]] = percent(0, finals[row["game"]])
-
-    # Get total games played
-    game_count = db.execute("SELECT COUNT(*) FROM fallguystracker.history WHERE id = :id", id=id)
-    stats["game_count"] = game_count[0]["count"]
 
     # Get total wins
     win_count = db.execute("SELECT COUNT(game) FROM fallguystracker.history WHERE id = :id AND result = 'win'", id=id)
@@ -241,11 +245,10 @@ def statistics():
     team_losses = db.execute("SELECT COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE mode = 'team' AND result = 'loss' AND id = :id GROUP BY game",
                             id=id)
 
-    # Calculate % of eliminations due to team games
-
-    # Return 0 if there are no team eliminations
+    # Return 0% if there are no team eliminations
     if not team_losses:
         stats["team_winrate"] = "0.00%"
+    # Calculate % of eliminations due to team games
     else:
         stats["team_winrate"] = percent(team_losses[0]["count"], stats["game_count"] - stats["win_count"])
 
@@ -257,8 +260,6 @@ def statistics():
 
     for value in wins.values():
         values.append(value)
-
-
 
     return render_template("stats.html", username=user[0]["username"], losses=losses, stats=stats, wins=wins, finals=finals, finals_winrate=finals_winrate,
                             labels=labels, values=values)
@@ -278,7 +279,7 @@ def matchhistory():
 
     matches = db.execute("SELECT * FROM fallguystracker.history WHERE id=:id ORDER BY datetime DESC LIMIT 15", id=session["user_id"])
     if not matches:
-        return apology("No matches recorded", "404")
+        matches = None
 
     return render_template("history.html", matches=matches)
 
@@ -331,10 +332,6 @@ def profile(username):
     return render_template("profile.html", username=username, matches=matches, stats=stats)
 
 
-
-
-
-
 def errorhandler(e):
     """Handle error"""
     if not isinstance(e, HTTPException):
@@ -349,11 +346,10 @@ for code in default_exceptions:
 
     # TO DO:
 
-    # Error on stats page if no games recorded
-    # Final games played on each map
     # Player profile search doesn't require login
+    # Fall guys branding
 
-    # Add wins per day ?
+    # Add wins/games per day ?
     # Add time zones?
 
 if __name__ == '__main__':
