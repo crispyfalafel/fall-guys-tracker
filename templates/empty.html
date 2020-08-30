@@ -1,9 +1,14 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    {{ route.title() }}
+    Statistics
 {% endblock %}
 
 {% block main %}
-    <h1>Record matches to view {{ route }}!</h1>
+    <div class="pb-3">
+        <h1>Player Statistics: {{ username.title() }}</h1>
+        <h3>Matches: 0</h3>
+    </div>  
+
+    <h3 class="pt-3">Record matches to view statistics!</h3>
 {% endblock %}

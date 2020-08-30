@@ -180,7 +180,7 @@ def statistics():
     rows = db.execute("SELECT * FROM fallguystracker.history WHERE id = :id", id=id)
     # Return empty page if user has no games recorded
     if not rows:
-        return render_template("empty.html", route="statistics")
+        return render_template("empty.html", username=user[0]["username"])
 
     stats["game_count"] = game_count[0]["count"]
     
