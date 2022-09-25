@@ -1,11 +1,5 @@
 
-flask_session/2029240f6d1128be89ddc32729463129
-flask_session/26687aabfb5a7af15584bca3bfcde83d
-flask_session/tmp71h8afhf.__wz_cache
-flask_session/tmpvxvs9i_p.__wz_cache
-*.pyc
-Procfile
-
 *.__wz_cache
-flask_session/c5908a182a4b0bb17d0c77ba6c5f2572
-Procfile
+
+flask_session/
+__pycache__/
