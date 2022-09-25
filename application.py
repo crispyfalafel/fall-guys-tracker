@@ -32,7 +32,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Configure CS50 Library to use SQLite database
+# Configure CS50 Library to use SQLite databased
 db = SQL("postgres://hzeqxftaqdqkoo:642486dee2042c4249b3a4a5d5f22a47af2d72ba31939910b044e0951550ef92@ec2-52-86-116-94.compute-1.amazonaws.com:5432/d5t0i8j478i083")
 # sqlite:///fallguys.db
 
