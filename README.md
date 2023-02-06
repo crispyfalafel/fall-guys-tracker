@@ -1,6 +1,6 @@
 # Fall Guys Tracker
 
-## A Fall Guys companion app that allows you to record game history and displays results graphically.
+## A Fall Guys companion app to record game history and display results graphically.
 
 ### Landing Page
 ![landing page](https://i.imgur.com/a8EJsW0.png)
