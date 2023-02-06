@@ -33,7 +33,8 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Configure CS50 Library to use SQLite databased
-db = SQL("postgresql://emqrmehfudvjbw:fbf0c3da7cef9a41c43451d0df51a25960bfb24d08740c8fd3a1efada8e338a8@ec2-54-209-46-195.compute-1.amazonaws.com:5432/d9ulfmahot7no3")
+# db = SQL("postgresql://emqrmehfudvjbw:fbf0c3da7cef9a41c43451d0df51a25960bfb24d08740c8fd3a1efada8e338a8@ec2-54-209-46-195.compute-1.amazonaws.com:5432/d9ulfmahot7no3")
+db = SQL("postgresql://postgres:postgres123@localhost:5432/FallGuysTracker")
 # sqlite:///fallguys.db
 
 
@@ -45,8 +46,8 @@ def index():
     if request.method == "GET":
 
         # Get list of games
-        finals = db.execute("SELECT * FROM fallguystracker.games WHERE mode='final'")
-        nonfinals = db.execute("SELECT * FROM fallguystracker.games WHERE NOT mode='final'")
+        finals = db.execute("SELECT * FROM games WHERE mode='final'")
+        nonfinals = db.execute("SELECT * FROM games WHERE NOT mode='final'")
         return render_template("index.html", finals=finals, nonfinals=nonfinals)
 
     else:
@@ -64,7 +65,7 @@ def index():
             flash("Results missing", "warning")
             return redirect("/")
 
-        db.execute("INSERT INTO fallguystracker.history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, current_timestamp(0))",
+        db.execute("INSERT INTO history (id, result, game, round, datetime) VALUES (:id, :result, :game, :round, current_timestamp(0))",
                     id=session["user_id"], result=request.form.get("result"), game=request.form.get("game"), round=int(request.form.get("round")))
 
         flash("Match recorded!", "success")
@@ -93,7 +94,7 @@ def login():
             return render_template("login.html")
 
         # Query database for username
-        rows = db.execute("SELECT * FROM fallguystracker.users WHERE username = :username",
+        rows = db.execute("SELECT * FROM users WHERE username = :username",
                           username=request.form.get("username").lower())
 
         # Ensure username exists and password is correct
@@ -102,7 +103,7 @@ def login():
             return render_template("login.html")
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = rows[0]["username"]
 
         # Redirect user to home page
         return redirect("/")
@@ -145,7 +146,7 @@ def register():
             return redirect("/register")
 
         # Check if username already taken
-        rows = db.execute("SELECT * FROM fallguystracker.users WHERE username = :username",
+        rows = db.execute("SELECT * FROM users WHERE username = :username",
                             username=request.form.get("username"))
         if len(rows) > 0:
             flash("Username already taken.", "warning")
@@ -155,7 +156,7 @@ def register():
         password_hash = generate_password_hash(request.form.get("password"))
 
         # Add registration information to database
-        id = db.execute("INSERT INTO fallguystracker.users (username, hash) VALUES (:username, :password)", username=request.form.get("username").lower(), password=password_hash)
+        id = db.execute("INSERT INTO users (username, hash) VALUES (:username, :password)", username=request.form.get("username").lower(), password=password_hash)
 
         # Log user in
         session["user_id"] = id
@@ -169,15 +170,15 @@ def statistics():
 
     # Get username
     id=session["user_id"]
-    user = db.execute("SELECT * FROM fallguystracker.users WHERE id=:id", id=session["user_id"])
+    user = db.execute("SELECT * FROM users WHERE username=:id", id=session["user_id"])
 
     stats = {}
 
     # Get total games played
-    game_count = db.execute("SELECT COUNT(*) FROM fallguystracker.history WHERE id = :id", id=id)
+    game_count = db.execute("SELECT COUNT(*) FROM history WHERE id = :id", id=id)
 
     # Check if user has games recorded
-    rows = db.execute("SELECT * FROM fallguystracker.history WHERE id = :id", id=id)
+    rows = db.execute("SELECT * FROM history WHERE id = :id", id=id)
     # Return empty page if user has no games recorded
     if not rows:
         return render_template("empty.html", username=user[0]["username"])
@@ -186,18 +187,18 @@ def statistics():
     
 
     # Get dictionary of total win count for each finals map
-    rows = db.execute("SELECT game, COUNT(game) FROM fallguystracker.history WHERE id = :id AND result = 'win' GROUP BY game",
+    rows = db.execute("SELECT game, COUNT(game) FROM history WHERE id = :id AND result = 'win' GROUP BY game",
                     id=id)
     wins = {}
     for row in rows:
         wins[row["game"]] = row["count"]
 
     # Get list of total losses on each map in descending order
-    losses = db.execute("SELECT game, COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE NOT mode= 'final' AND id = :id AND result = 'loss' GROUP BY game ORDER BY COUNT(game) DESC;",
+    losses = db.execute("SELECT game, COUNT(game) FROM history JOIN games ON game = games.name WHERE NOT mode= 'final' AND id = :id AND result = 'loss' GROUP BY game ORDER BY COUNT(game) DESC;",
                     id=id)
 
     # Get dictionary of total rounds played on each finals map and win rate for each map
-    rows = db.execute("SELECT game, COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE mode = 'final' AND id = :id GROUP BY game",
+    rows = db.execute("SELECT game, COUNT(game) FROM history JOIN games ON game = games.name WHERE mode = 'final' AND id = :id GROUP BY game",
                     id=id)
     finals = {}
     finals_winrate = {}
@@ -213,15 +214,15 @@ def statistics():
             finals_winrate[row["game"]] = percent(0, finals[row["game"]])
 
     # Get total wins
-    win_count = db.execute("SELECT COUNT(game) FROM fallguystracker.history WHERE id = :id AND result = 'win'", id=id)
+    win_count = db.execute("SELECT COUNT(game) FROM history WHERE id = :id AND result = 'win'", id=id)
     stats["win_count"] = win_count[0]['count']
 
     # Get total rounds played
-    round_count = db.execute("SELECT SUM(round) FROM fallguystracker.history WHERE id = :id", id=id)
+    round_count = db.execute("SELECT SUM(round) FROM history WHERE id = :id", id=id)
     stats["round_count"] = round_count[0]["sum"]
 
     # Get finals made
-    finals_count = db.execute("SELECT COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE mode = 'final' AND id = :id",
+    finals_count = db.execute("SELECT COUNT(game) FROM history JOIN games ON game = games.name WHERE mode = 'final' AND id = :id",
                             id=id)
     stats["finals_count"] = finals_count[0]["count"]
 
@@ -238,11 +239,11 @@ def statistics():
     stats["rounds_rate"] = percent(stats["rounds_won"], stats["round_count"])
 
     # Calculate average rounds per game
-    avg_round = db.execute("SELECT AVG(round) FROM fallguystracker.history WHERE id = :id", id=id)
+    avg_round = db.execute("SELECT AVG(round) FROM history WHERE id = :id", id=id)
     stats["avg_round"] = round(avg_round[0]["avg"], 2)
 
     # Get total team game eliminations
-    team_losses = db.execute("SELECT COUNT(game) FROM fallguystracker.history JOIN fallguystracker.games ON game = fallguystracker.games.name WHERE mode = 'team' AND result = 'loss' AND id = :id GROUP BY game",
+    team_losses = db.execute("SELECT COUNT(game) FROM history JOIN games ON game = games.name WHERE mode = 'team' AND result = 'loss' AND id = :id GROUP BY game",
                             id=id)
 
     # Return 0% if there are no team eliminations
@@ -268,7 +269,7 @@ def statistics():
 @login_required
 def collection():
     """Display or add to user's cosmetics collection"""
-    users = db.execute("SELECT * FROM fallguystracker.users WHERE id = :id", id=session["user_id"])
+    users = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
 
     return render_template("collection.html")
 
@@ -277,7 +278,7 @@ def collection():
 def matchhistory():
     """Display user's recent match history"""
 
-    matches = db.execute("SELECT * FROM fallguystracker.history WHERE id=:id ORDER BY datetime DESC LIMIT 15", id=session["user_id"])
+    matches = db.execute("SELECT * FROM history WHERE id=:id ORDER BY datetime DESC LIMIT 15", id=session["user_id"])
     if not matches:
         matches = None
 
@@ -307,7 +308,7 @@ def search():
 def profile(username):
 
     # Search for user
-    user = db.execute("SELECT * FROM fallguystracker.users WHERE username= :username", username=username.lower())
+    user = db.execute("SELECT * FROM users WHERE username= :username", username=username.lower())
     stats = {}
 
     # Redirect user to search page if username does not exist
@@ -316,18 +317,18 @@ def profile(username):
         return redirect(url_for("search"))
 
     # Get searched user's id
-    search_id = user[0]["id"]
+    search_id = user[0]["username"]
 
     # Get number of wins
-    win_count = db.execute("SELECT COUNT(game) FROM fallguystracker.history WHERE id = :id AND result = 'win'", id=search_id)
+    win_count = db.execute("SELECT COUNT(game) FROM history WHERE id = :id AND result = 'win'", id=search_id)
     stats["win_count"] = win_count[0]['count']
 
     # Get number of games played
-    game_count = db.execute("SELECT COUNT(*) FROM fallguystracker.history WHERE id = :id", id=search_id)
+    game_count = db.execute("SELECT COUNT(*) FROM history WHERE id = :id", id=search_id)
     stats["game_count"] = game_count[0]["count"]
 
     # Get recent match history (last 10 games)
-    matches = db.execute("SELECT * FROM fallguystracker.history WHERE id=:id ORDER BY datetime DESC LIMIT 10", id=search_id)
+    matches = db.execute("SELECT * FROM history WHERE id=:id ORDER BY datetime DESC LIMIT 10", id=search_id)
 
     return render_template("profile.html", username=username, matches=matches, stats=stats)
 
