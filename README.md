@@ -2,7 +2,7 @@
 
 ## A Fall Guys companion app to record game history and display results graphically.
 
-### Landing Page
+### Record a Match
 ![landing page](https://i.imgur.com/a8EJsW0.png)
 
 ### Statistics Page
