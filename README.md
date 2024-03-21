@@ -1,5 +1,4 @@
 # Fall Guys Tracker
-[inject](javascript:console.log("hey"))
 
 ## A Fall Guys companion app to record game history and display results graphically.
 
